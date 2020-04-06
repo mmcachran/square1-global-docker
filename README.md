@@ -32,7 +32,7 @@ Below are all the ideas for this project. These aren't currently ordered by impo
 #### Macro Goals
 - Make sq1 easy to install and use, by abstracting a lot of the manual effort into simple commands.
 - Make the confusion of global/local docker projects go away.
-- Make spinning up new pro
+- Make spinning up new project automated and as painless as possible.
 
 #### General
 - Should be easy to install, with the most minimum requirements as possible.
