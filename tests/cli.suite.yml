@@ -1,0 +1,7 @@
+actor: CliTester
+modules:
+    enabled:
+        - Filesystem
+        - Cli
+        - Asserts
+        - \Helper\Cli
