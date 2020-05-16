@@ -41,8 +41,13 @@ class MigrationTest extends Unit {
 		$this->assertCount( 1, $results );
 
 		$result = current( $results );
+
 		$this->assertTrue( $result->success );
 		$this->assertEquals( '2020_05_16_265481_test_migration.php', $result->migration );
-		$this->tester->assertFileExists( codecept_output_dir( 'migrations' ) . '/2020_05_16_265481_test_migration.json' );
+
+		$file = codecept_output_dir( 'migrations' ) . '/2020_05_16_265481_test_migration.json';
+		$this->tester->assertFileExists( $file );
+		$this->tester->openFile( $file );
+		$this->tester->seeInThisFile( '__created_at' );
 	}
 }
