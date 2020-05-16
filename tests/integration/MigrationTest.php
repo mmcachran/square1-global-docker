@@ -11,12 +11,16 @@ class MigrationTest extends Unit {
 	 */
 	protected $tester;
 
-	protected $migrationFile;
+	protected $migrationFiles;
 
 	public function setUp(): void {
 		parent::setUp();
 
-		$this->migrationFile = codecept_data_dir( 'migrations/2020_05_16_265481_test_migration.php' );
+		// Purposely add these in the wrong order to make sure they're sorted later
+		$this->migrationFiles = [
+			codecept_data_dir( 'migrations/2020_05_16_285500_test_second_migration.php' ),
+			codecept_data_dir( 'migrations/2020_05_16_265481_test_migration.php' ),
+		];
 	}
 
 	protected function _after() {
@@ -32,22 +36,27 @@ class MigrationTest extends Unit {
 		$container = new League\Container\Container();
 		$migrator  = new Migrator( $db, $container );
 
-		$migrations = [
-			$this->migrationFile,
-		];
+		$migrations = $this->migrationFiles;
 
 		$results = $migrator->run( $migrations );
 
-		$this->assertCount( 1, $results );
+		$this->assertCount( 2, $results );
 
-		$result = current( $results );
+		// The earlier migration should have run first
+		$this->assertTrue( $results[0]->success );
+		$this->assertEquals( '2020_05_16_265481_test_migration.php', $results[0]->migration );
 
-		$this->assertTrue( $result->success );
-		$this->assertEquals( '2020_05_16_265481_test_migration.php', $result->migration );
+		$this->assertTrue( $results[1]->success );
+		$this->assertEquals( '2020_05_16_285500_test_second_migration.php', $results[1]->migration );
 
-		$file = codecept_output_dir( 'migrations' ) . '/2020_05_16_265481_test_migration.json';
-		$this->tester->assertFileExists( $file );
-		$this->tester->openFile( $file );
+		$migration_1 = codecept_output_dir( 'migrations' ) . '/2020_05_16_265481_test_migration.json';
+		$this->tester->assertFileExists( $migration_1 );
+		$this->tester->openFile( $migration_1 );
+		$this->tester->seeInThisFile( '__created_at' );
+
+		$migration_2 = codecept_output_dir( 'migrations' ) . '/2020_05_16_285500_test_second_migration.json';
+		$this->tester->assertFileExists( $migration_2 );
+		$this->tester->openFile( $migration_2 );
 		$this->tester->seeInThisFile( '__created_at' );
 	}
 }
