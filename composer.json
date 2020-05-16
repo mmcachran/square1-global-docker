@@ -16,7 +16,9 @@
         "consolidation/robo": "^1.0.0",
         "droath/robo-docker-compose": "0.0.*",
         "eaudeweb/robo-curl": "^1.0",
-        "composer/semver": "^1.5"
+        "composer/semver": "^1.5",
+        "tmarois/filebase": "^1.0",
+        "illuminate/support": "^7.0"
     },
     "autoload": {
         "psr-4": {
