@@ -11,7 +11,19 @@ class MigrationTest extends Unit {
 	 */
 	protected $tester;
 
+	/**
+	 * An array of paths to migration files.
+	 *
+	 * @var array
+	 */
 	protected $migrationFiles;
+
+	/**
+	 * The Migrator.
+	 *
+	 * @var Migrator
+	 */
+	protected $migrator;
 
 	public function setUp(): void {
 		parent::setUp();
@@ -21,6 +33,12 @@ class MigrationTest extends Unit {
 			codecept_data_dir( 'migrations/2020_05_16_285500_test_second_migration.php' ),
 			codecept_data_dir( 'migrations/2020_05_16_265481_test_migration.php' ),
 		];
+
+		$db             = new Database( [
+			'dir' => codecept_output_dir( 'migrations' ),
+		] );
+		$container      = new League\Container\Container();
+		$this->migrator = new Migrator( $db, $container );
 	}
 
 	protected function _after() {
@@ -30,15 +48,8 @@ class MigrationTest extends Unit {
 	}
 
 	public function testMigratorRunsMigrations() {
-		$db        = new Database( [
-			'dir' => codecept_output_dir( 'migrations' ),
-		] );
-		$container = new League\Container\Container();
-		$migrator  = new Migrator( $db, $container );
-
 		$migrations = $this->migrationFiles;
-
-		$results = $migrator->run( $migrations );
+		$results    = $this->migrator->run( $migrations );
 
 		$this->assertCount( 2, $results );
 
@@ -58,5 +69,25 @@ class MigrationTest extends Unit {
 		$this->tester->assertFileExists( $migration_2 );
 		$this->tester->openFile( $migration_2 );
 		$this->tester->seeInThisFile( '__created_at' );
+	}
+
+	public function testMigratorDoesNotRunExistingMigrations() {
+		// Mock one of the test files
+		$this->tester->writeToFile( codecept_output_dir( 'migrations' ) . '/2020_05_16_265481_test_migration.json', 'test' );
+
+		$results = $this->migrator->run( $this->migrationFiles );
+
+		$this->assertCount( 1, $results );
+
+		$result = current( $results );
+
+		$this->assertTrue( $result->success );
+		$this->assertEquals( '2020_05_16_285500_test_second_migration.php', $result->migration );
+
+		$migration = codecept_output_dir( 'migrations' ) . '/2020_05_16_285500_test_second_migration.json';
+		$this->tester->assertFileExists( $migration );
+		$this->tester->openFile( $migration );
+		$this->tester->seeInThisFile( '__created_at' );
+
 	}
 }
