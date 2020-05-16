@@ -1,0 +1,16 @@
+<?php declare( strict_types=1 );
+
+use Tribe\SquareOne\Migrations\Migration;
+
+final class {{ class }} extends Migration {
+
+	/**
+	 * Run the Migration
+	 *
+	 * @return bool
+	 */
+	public function up(): bool {
+		return true;
+	}
+
+}

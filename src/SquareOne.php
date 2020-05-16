@@ -14,6 +14,7 @@ use Robo\Contract\ConfigAwareInterface;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Tribe\SquareOne\Commands\DevCommands;
 use Tribe\SquareOne\Commands\SquareOneCommand;
 use Tribe\SquareOne\Commands\UpdateCommands;
 use Tribe\SquareOne\Hooks\CertificateHandler;
@@ -21,6 +22,7 @@ use Tribe\SquareOne\Hooks\Hook;
 use Tribe\SquareOne\Hooks\ResolverHandler;
 use Tribe\SquareOne\Hooks\Update;
 use Tribe\SquareOne\Log\SquareOneLogger;
+use Tribe\SquareOne\Migrations\MigrationCreator;
 use Tribe\SquareOne\Models\Certificate;
 use Tribe\SquareOne\Commands\ComposerCommands;
 use Tribe\SquareOne\Commands\GlobalDockerCommands;
@@ -72,11 +74,11 @@ class SquareOne implements ConfigAwareInterface, ContainerAwareInterface {
 	/**
 	 * SquareOne constructor.
 	 *
-	 * @param  string                                                  $version
-	 * @param  string                                                  $scriptPath
-	 * @param  \Robo\Config\Config                                     $config
-	 * @param  \Symfony\Component\Console\Input\InputInterface|null    $input
-	 * @param  \Symfony\Component\Console\Output\OutputInterface|null  $output
+	 * @param   string                                                  $version
+	 * @param   string                                                  $scriptPath
+	 * @param   \Robo\Config\Config                                     $config
+	 * @param   \Symfony\Component\Console\Input\InputInterface|null    $input
+	 * @param   \Symfony\Component\Console\Output\OutputInterface|null  $output
 	 */
 	public function __construct(
 		string $version,
@@ -108,8 +110,8 @@ class SquareOne implements ConfigAwareInterface, ContainerAwareInterface {
 	/**
 	 * Run a command.
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface    $input
-	 * @param  \Symfony\Component\Console\Output\OutputInterface  $output
+	 * @param   \Symfony\Component\Console\Input\InputInterface    $input
+	 * @param   \Symfony\Component\Console\Output\OutputInterface  $output
 	 *
 	 * @return int The status code.
 	 */
@@ -123,7 +125,7 @@ class SquareOne implements ConfigAwareInterface, ContainerAwareInterface {
 	 * @return array
 	 */
 	private function getTasks(): array {
-		return [
+		$tasks = [
 			CertificateHandler::class,
 			\Tribe\SquareOne\Hooks\ResolverHandler::class,
 			\Tribe\SquareOne\Hooks\Docker::class,
@@ -137,6 +139,24 @@ class SquareOne implements ConfigAwareInterface, ContainerAwareInterface {
 			\Tribe\SquareOne\Commands\TestCommands::class,
 			\Tribe\SquareOne\Commands\ConfigCommands::class,
 			\Tribe\SquareOne\Commands\UpdateCommands::class,
+		];
+
+		// Add development only tasks if not running in a phar.
+		if ( empty( \Phar::running() ) ) {
+			$tasks = array_merge( $tasks, $this->getDevTasks() );
+		}
+
+		return $tasks;
+	}
+
+	/**
+	 * Get development only tasks
+	 *
+	 * @return array|string[]
+	 */
+	private function getDevTasks(): array {
+		return [
+			\Tribe\SquareOne\Commands\DevCommands::class,
 		];
 	}
 
@@ -179,6 +199,9 @@ class SquareOne implements ConfigAwareInterface, ContainerAwareInterface {
 		          ->invokeMethod( 'setVersion', [ $this->version ] )
 		          ->invokeMethod( 'setMigrations', [ 'migrations' ] )
 		          ->invokeMethod( 'setScriptPath', [ $this->scriptPath ] );
+
+		$container->inflector( DevCommands::class )
+		          ->invokeMethod( 'setMigrationCreator', [ new MigrationCreator() ] );
 
 		// Override the RoboLogger class with our own, less verbose version
 		$container->share( 'logger', SquareOneLogger::class )
