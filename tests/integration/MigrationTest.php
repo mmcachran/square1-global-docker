@@ -25,7 +25,7 @@ class MigrationTest extends Unit {
 		$this->tester->deleteDir( codecept_output_dir( 'migrations' ) );
 	}
 
-	public function testMigrator() {
+	public function testMigratorRunsAMigration() {
 		$db        = new Database( [
 			'dir' => codecept_output_dir( 'migrations' ),
 		] );
