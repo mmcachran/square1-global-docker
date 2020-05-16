@@ -89,3 +89,6 @@ certificate:
     Manjaro:
       dir: '${certificate.Linux.Arch.dir}'
       command: '${certificate.Linux.Arch.command}'
+    Zorin:
+      dir: '${certificate.Linux.Debian.dir}'
+      command: '${certificate.Linux.Debian.command}'

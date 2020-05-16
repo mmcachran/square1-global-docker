@@ -18,7 +18,8 @@
         "eaudeweb/robo-curl": "^1.0",
         "composer/semver": "^1.5",
         "tmarois/filebase": "^1.0",
-        "illuminate/support": "^7.0"
+        "illuminate/support": "^7.0",
+        "m1/env": "^2.2"
     },
     "autoload": {
         "psr-4": {
@@ -54,6 +55,7 @@
         "codeception/module-phpbrowser": "^1.0.0",
         "codeception/module-asserts": "^1.0.0",
         "codeception/module-cli": "^1.0",
-        "codeception/module-filesystem": "^1.0"
+        "codeception/module-filesystem": "^1.0",
+        "codeception/aspect-mock": "^3.1"
     }
 }
