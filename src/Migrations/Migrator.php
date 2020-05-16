@@ -26,8 +26,8 @@ class Migrator {
 	/**
 	 * Migrator constructor.
 	 *
-	 * @param   Database            $db  The migrations database
-	 * @param   ContainerInterface  $container The robo container
+	 * @param   Database            $db         The migrations database
+	 * @param   ContainerInterface  $container  The robo container
 	 */
 	public function __construct( Database $db, ContainerInterface $container ) {
 		$this->db        = $db;
@@ -49,16 +49,16 @@ class Migrator {
 
 		foreach ( $migrations as $migration ) {
 			$filename = basename( $migration );
+			$id       = str_replace( '.php', '', $filename );
 
-			if ( ! $this->db->has( $filename ) ) {
+			if ( ! $this->db->has( $id ) ) {
 				$this->require( $migration );
 				$instance = $this->resolve( $migration );
 
 				$result = new stdClass();
 
 				if ( $instance->up() ) {
-					$item = $this->db->get( $filename );
-					$item->save();
+					$this->store( $id );
 
 					$result->success   = true;
 					$result->migration = $filename;
@@ -79,7 +79,7 @@ class Migrator {
 	 *
 	 * @param   string  $file  The full path to the migration file
 	 */
-	public function require( string $file ): void {
+	protected function require( string $file ): void {
 		require $file;
 	}
 
@@ -90,10 +90,20 @@ class Migrator {
 	 *
 	 * @return Migration
 	 */
-	public function resolve( $file ): Migration {
-		$file  = str_replace( '.php', '', $file );
+	protected function resolve( string $file ): Migration {
+		$file  = str_replace( '.php', '', basename( $file ) );
 		$class = Str::studly( implode( '_', array_slice( explode( '_', $file ), 4 ) ) );
 
 		return new $class( $this->container );
+	}
+
+	/**
+	 * Store that a migration has run
+	 *
+	 * @param   string  $id
+	 */
+	protected function store( string $id ): void {
+		$item = $this->db->get( $id );
+		$item->save();
 	}
 }

@@ -1,0 +1,7 @@
+actor: IntegrationTester
+modules:
+    enabled:
+        - Asserts
+        - Filesystem
+        - \Helper\Integration
+    step_decorators: ~
