@@ -80,7 +80,7 @@ class Migrator {
 	 * @param   string  $file  The full path to the migration file
 	 */
 	protected function require( string $file ): void {
-		require $file;
+		require_once $file;
 	}
 
 	/**
