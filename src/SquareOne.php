@@ -2,6 +2,7 @@
 
 namespace Tribe\SquareOne;
 
+use Filebase\Database;
 use Robo\Robo;
 use Robo\Application;
 use Robo\Config\Config;
@@ -38,6 +39,7 @@ class SquareOne implements ConfigAwareInterface, ContainerAwareInterface {
 
 	const APPLICATION_NAME = 'SquareOne Global Docker';
 	const REPOSITORY       = 'moderntribe/square1-global-docker';
+	const DB_STORE         = 'store';
 
 	/**
 	 * The Robo Runner.
@@ -168,8 +170,15 @@ class SquareOne implements ConfigAwareInterface, ContainerAwareInterface {
 		$container->inflector( UpdateCommands::class )
 		          ->invokeMethod( 'setVersion', [ $this->version ] );
 
+		$container->share( 'migrations', Database::class )
+		          ->withArgument( [
+			          'dir' => $this->config->get( 'squareone.config-dir' ) . '/' . self::DB_STORE . '/migrations',
+		          ] );
+
 		$container->inflector( Update::class )
-		          ->invokeMethod( 'setVersion', [ $this->version ] );
+		          ->invokeMethod( 'setVersion', [ $this->version ] )
+		          ->invokeMethod( 'setMigrations', [ 'migrations' ] )
+		          ->invokeMethod( 'setScriptPath', [ $this->scriptPath ] );
 
 		// Override the RoboLogger class with our own, less verbose version
 		$container->share( 'logger', SquareOneLogger::class )

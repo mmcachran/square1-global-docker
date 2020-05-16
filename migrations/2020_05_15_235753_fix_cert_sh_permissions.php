@@ -1,13 +1,8 @@
 <?php declare( strict_types=1 );
 
-namespace Tribe\SquareOne\Migrations;
+use Tribe\SquareOne\Migrations\Migration;
 
-/**
- * Migration to 2.0.1-beta
- *
- * @package Tribe\SquareOne\Migrations
- */
-final class Migration201Beta extends Migration {
+final class FixCertShPermissions extends Migration {
 
 	/**
 	 * Force cert.sh to +x for 2.0.0-beta users
@@ -19,5 +14,4 @@ final class Migration201Beta extends Migration {
 
 		return chmod( $config->get( 'docker.config-dir' ) . '/cert.sh', 0755 );
 	}
-
 }

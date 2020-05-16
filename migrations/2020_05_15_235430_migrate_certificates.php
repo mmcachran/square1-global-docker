@@ -1,15 +1,10 @@
 <?php declare( strict_types=1 );
 
-namespace Tribe\SquareOne\Migrations;
-
+use Tribe\SquareOne\Migrations\Migration;
 use Symfony\Component\Filesystem\Filesystem;
 
-/**
- * Migration to 2.0.0-beta
- *
- * @package Tribe\SquareOne\Migrations
- */
-final class Migration200Beta extends Migration {
+
+final class MigrateCertificates extends Migration {
 
 	/**
 	 * Run the Migration
@@ -29,5 +24,4 @@ final class Migration200Beta extends Migration {
 
 		return true;
 	}
-
 }

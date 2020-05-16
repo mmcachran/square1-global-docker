@@ -2,8 +2,6 @@
 
 use Codeception\Test\Unit;
 use League\Container\Container;
-use Tribe\SquareOne\Migrations\Migration;
-use Tribe\SquareOne\Migrations\MigrationFactory;
 
 class MigrationTest extends Unit {
 	/**
@@ -26,10 +24,5 @@ class MigrationTest extends Unit {
 
 		$container = new Container();
 		$container->add( 'application', $app );
-
-		$factory   = new MigrationFactory( $container );
-		$migration = $factory->make();
-
-		$this->assertInstanceOf( Migration::class, $migration );
 	}
 }

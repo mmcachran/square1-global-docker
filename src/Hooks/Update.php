@@ -3,13 +3,14 @@
 namespace Tribe\SquareOne\Hooks;
 
 use Robo\Robo;
+use Filebase\Database;
 use Composer\Semver\Comparator;
 use League\Container\ContainerAwareInterface;
 use League\Container\ContainerAwareTrait;
 use Consolidation\AnnotatedCommand\AnnotationData;
 use Symfony\Component\Console\Input\InputInterface;
 use Tribe\SquareOne\Commands\UpdateCommands;
-use Tribe\SquareOne\Migrations\MigrationFactory;
+use Tribe\SquareOne\Migrations\Migrator;
 
 /**
  * Update Hooks
@@ -30,17 +31,29 @@ class Update implements ContainerAwareInterface {
 	protected $version;
 
 	/**
-	 * Perform updates from version to version
+	 * The migrations Flat-file database
+	 *
+	 * @var Database
+	 */
+	protected $migrations;
+
+	/**
+	 * The root script path
+	 *
+	 * @var string
+	 */
+	protected $scriptPath;
+
+	/**
+	 * Run migrations
 	 *
 	 * @hook pre-init *
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
-	 * @param  \Consolidation\AnnotatedCommand\AnnotationData   $data
+	 * @param   \Symfony\Component\Console\Input\InputInterface  $input
+	 * @param   \Consolidation\AnnotatedCommand\AnnotationData   $data
 	 */
-	public function afterUpdate( InputInterface $input, AnnotationData $data ): void {
+	public function migrate( InputInterface $input, AnnotationData $data ): void {
 		$command = $data->get( 'command' );
-
-		$output = Robo::output();
 
 		if ( 'self:update-check' !== $command && 'self:update' !== $command ) {
 			$versionFile = sprintf( '%s/%s', Robo::config()->get( 'squareone.config-dir' ), self::INSTALLED_VERSION_FILE );
@@ -53,21 +66,33 @@ class Update implements ContainerAwareInterface {
 			}
 
 			if ( $shouldUpdate ) {
-				$factory   = new MigrationFactory( $this->container );
-				$migration = $factory->make();
 
-				if ( $migration ) {
+				$output     = Robo::output();
+				$migrations = [];
 
-					$output->writeln( sprintf( '<info>Migrating to %s...</info>', $this->version ) );
+				foreach ( glob( "{$this->scriptPath}/migrations/*.php" ) as $file ) {
+					$migrations[] = $file;
+				}
 
-					if ( $migration->up() ) {
-						$this->writeVersion( $versionFile );
-						$output->writeln( sprintf( '<info>Migration to %s complete!</info>', $this->version ) );
-					} else {
-						$output->writeln( sprintf( '<error>Failed to run migration for version %s</error>', $this->version ) );
+				if ( $migrations ) {
+					$migrator = new Migrator( $this->migrations, $this->container );
+					$results  = $migrator->run( $migrations );
+
+					if ( ! empty( $results ) ) {
+						$output->writeln( '<info>Running migrations...</info>' );
+
+						foreach ( $results as $result ) {
+							if ( $result->success ) {
+								$output->writeln( sprintf( '<info>Completed migration: %s</info>', $result->migration ) );
+							} else {
+								$output->writeln( sprintf( '<error>Migration failed: %s</error>', $result->migration ) );
+							}
+						}
 					}
+
+					$this->writeVersion( $versionFile );
+
 				} else {
-					// Nothing to do on this release, just update the version
 					$this->writeVersion( $versionFile );
 				}
 			}
@@ -77,7 +102,7 @@ class Update implements ContainerAwareInterface {
 	/**
 	 * Write the current version to the .version file
 	 *
-	 * @param  string  $versionFile  The path to the .version file
+	 * @param   string  $versionFile  The path to the .version file
 	 *
 	 * @return bool
 	 */
@@ -90,8 +115,8 @@ class Update implements ContainerAwareInterface {
 	 *
 	 * @hook init *
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface  $input
-	 * @param  \Consolidation\AnnotatedCommand\AnnotationData   $data
+	 * @param   \Symfony\Component\Console\Input\InputInterface  $input
+	 * @param   \Consolidation\AnnotatedCommand\AnnotationData   $data
 	 */
 	public function check( InputInterface $input, AnnotationData $data ): void {
 		$command = $data->get( 'command' );
@@ -106,12 +131,38 @@ class Update implements ContainerAwareInterface {
 	/**
 	 * Set the current version, set via inflection
 	 *
-	 * @param  string  $version  The current phar version
+	 * @param   string  $version  The current phar version
 	 *
 	 * @return \Tribe\SquareOne\Hooks\Update
 	 */
 	public function setVersion( string $version ): self {
 		$this->version = $version;
+
+		return $this;
+	}
+
+	/**
+	 * Set the Migrations flat-file database via inflection
+	 *
+	 * @param   Database  $migrations  The migrations flat-file database.
+	 *
+	 * @return $this
+	 */
+	public function setMigrations( Database $migrations ): self {
+		$this->migrations = $migrations;
+
+		return $this;
+	}
+
+	/**
+	 * Set the script path via inflection
+	 *
+	 * @param   string  $scriptPath
+	 *
+	 * @return $this
+	 */
+	public function setScriptPath( string $scriptPath ): self {
+		$this->scriptPath = $scriptPath;
 
 		return $this;
 	}
