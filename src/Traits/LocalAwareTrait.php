@@ -20,7 +20,7 @@ trait LocalAwareTrait {
 	 *
 	 * This checks the current folder for specific SquareOne files, and traverses up directories until it finds a match
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface  $input  |null
+	 * @param   \Symfony\Component\Console\Input\InputInterface  $input  |null
 	 */
 	public function getLocalDockerConfig( ?InputInterface $input ): void {
 		if ( ! $this->is_local_command( $input ) ) {
@@ -96,7 +96,7 @@ trait LocalAwareTrait {
 	/**
 	 * Load extra configuration options if the project has a squareone.yml.
 	 *
-	 * @param  string  $projectRoot
+	 * @param   string  $projectRoot
 	 */
 	protected function maybeLoadConfig( string $projectRoot ): void {
 		$localConfig = $projectRoot . '/' . LocalDocker::CONFIG_FILE;
@@ -109,7 +109,7 @@ trait LocalAwareTrait {
 	/**
 	 * Determine if this is a local docker command.
 	 *
-	 * @param  \Symfony\Component\Console\Input\InputInterface  $input  |null
+	 * @param   \Symfony\Component\Console\Input\InputInterface  $input  |null
 	 *
 	 * @return bool
 	 */
@@ -127,15 +127,14 @@ trait LocalAwareTrait {
 			return false;
 		}
 
-		if ( 'global' === strtok( $input->getFirstArgument(), ':' ) ) {
-			return false;
-		}
+		$prefixedCommands = [
+			'config',
+			'global',
+			'self',
+			'dev',
+		];
 
-		if ( 'self' === strtok( $input->getFirstArgument(), ':' ) ) {
-			return false;
-		}
-
-		if ( 'dev' === strtok( $input->getFirstArgument(), ':' ) ) {
+		if ( in_array( strtok( $input->getFirstArgument(), ':' ), $prefixedCommands ) ) {
 			return false;
 		}
 
