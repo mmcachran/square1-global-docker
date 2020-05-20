@@ -9,15 +9,23 @@
       "exclude": [
         "bamarni",
         "behat",
+        "codeception",
+        "dissect",
+        "goaop",
+        "guzzlehttp",
+        "deep-copy",
         "phpunit",
         "php_codesniffer",
         "php-vcr",
         "prophecy",
+        "getallheaders",
+        "sebastian",
         "test",
         "tests",
         "Test",
         "Tests",
-        "Tester"
+        "Tester",
+        "webmozart"
       ],
       "in": "vendor",
       "name": "*.php"
