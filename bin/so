@@ -29,6 +29,11 @@ $configFiles = [
 	$home . '/.config/squareone/' . \Tribe\SquareOne\Models\LocalDocker::CONFIG_FILE,
 ];
 
+// Add a config file when running automated tests.
+if ( getenv( 'SQ1_TEST' ) ) {
+	array_push( $configFiles, $scriptPath . '/tests/_data/' . \Tribe\SquareOne\Models\LocalDocker::CONFIG_FILE );
+}
+
 $input       = new ArgvInput( $argv );
 $output      = new ConsoleOutput();
 $config      = Robo::createConfiguration( array_filter( $configFiles, 'file_exists' ) );
