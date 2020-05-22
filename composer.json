@@ -28,7 +28,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tribe\\Tests\\": "tests/"
+            "SquareOne\\": "tests"
         }
     },
     "bin": [

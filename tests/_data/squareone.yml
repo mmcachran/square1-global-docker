@@ -10,7 +10,7 @@
 
 # Config directory
 squareone:
-  config-dir: '${env.PWD}/tests/_output/squareone'
+  config-dir: '${env.PWD}/tests/_data/squareone'
 
 # Docker
 docker:
@@ -57,14 +57,14 @@ tests:
 # ResolverHandler
 resolver:
   Darwin:
-    dir: '/etc/resolver/'
+    dir: '${squareone.config-dir}/tmp/'
     file: 'tribe'
   Linux:
     Arch:
-      dir: '/etc/'
+      dir: '${squareone.config-dir}/tmp/'
       file: 'resolv.conf.head'
     Debian:
-      dir: '/etc/resolvconf/resolv.conf.d/'
+      dir: '${squareone.config-dir}/tmp/'
       file: 'head'
     Ubuntu:
       dir: '${resolver.Linux.Debian.dir}'
@@ -78,11 +78,11 @@ resolver:
 certificate:
   Linux:
     Arch:
-      dir: '/etc/ca-certificates/trust-source/anchors/'
-      command: 'trust extract-compat'
+      dir: '${squareone.config-dir}/tmp/'
+      command: 'ls'
     Debian:
-      dir: '/usr/local/share/ca-certificate/'
-      command: 'update-ca-certificates'
+      dir: '${squareone.config-dir}/tmp/'
+      command: 'ls'
     Ubuntu:
       dir: '${certificate.Linux.Debian.dir}'
       command: '${certificate.Linux.Debian.command}'
@@ -92,3 +92,8 @@ certificate:
     Zorin:
       dir: '${certificate.Linux.Debian.dir}'
       command: '${certificate.Linux.Debian.command}'
+
+# Testing Configuration
+docker-compose:
+  - '${docker.compose}'
+project-name: 'test-project'
